@@ -13,7 +13,28 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
-      perSystem = { pkgs, ... }: {
+      perSystem = { pkgs, lib, ... }:
+      let
+        lbforth = pkgs.stdenv.mkDerivation {
+          name = "lbforth";
+          src = lib.cleanSource ./.;
+
+          buildPhase = ''
+            $CC $src/lbForth.c
+          '';
+
+          installPhase = ''
+            mkdir -p $out/bin
+            cp a.out $out/bin/lbforth
+          '';
+        };
+      in
+      {
+        packages = {
+          inherit lbforth;
+          default = lbforth;
+        };
+
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.nil
